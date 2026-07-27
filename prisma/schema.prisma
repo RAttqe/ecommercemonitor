@@ -1,0 +1,41 @@
+// Верхня частина залишається вашою (sqlite або postgresql)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Або ваш поточний провайдер
+  url      = env("DATABASE_URL")
+}
+
+// 🆕 НОВА ТАБЛИЦЯ КОРИСТУВАЧІВ (Для 3-денного тріалу)
+model User {
+  id          String   @id
+  username    String?  // 👈 Додаємо юзернейм (може бути порожнім)
+  firstName   String?  // 👈 Додаємо ім'я
+  trialEndsAt DateTime
+  isPremium   Boolean  @default(false)
+  sites       Site[]
+}
+
+// 🔄 ОНОВЛЕНА ТАБЛИЦЯ САЙТІВ (Додано зв'язок з User)
+model Site {
+  id         Int          @id @default(autoincrement())
+  url        String
+  clientId   String
+  isActive   Boolean      @default(true)
+  user       User         @relation(fields: [clientId], references: [id])
+  logs       MonitorLog[]
+}
+
+// 📋 ТАБЛИЦЯ ЛОГІВ (Залишається як була)
+model MonitorLog {
+  id         Int      @id @default(autoincrement())
+  siteId     Int
+  status     Int?
+  loadTimeMs Int
+  isSuccess  Boolean
+  ping       Int      // 👈 ОБОВ'ЯЗКОВО ДОДАЙТЕ ЦЕЙ РЯДОК
+  createdAt  DateTime @default(now())
+  site       Site     @relation(fields: [siteId], references: [id])
+}

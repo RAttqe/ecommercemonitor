@@ -1,0 +1,28 @@
+# Безпека (Секретні ключі та паролі)
+.env
+
+# Залежності Node.js (Вони занадто важкі, сервер сам їх завантажить)
+node_modules/
+
+# База даних SQLite (Щоб не затерти реальні дані клієнтів при оновленнях)
+*.db
+*.db-journal
+dev.db
+dev.db-journal
+
+# Логи та кеш
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# Файли операційних систем
+.DS_Store
+Thumbs.db
+
+# Кеш та звіти Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

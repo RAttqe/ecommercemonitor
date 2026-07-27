@@ -1,0 +1,32 @@
+{
+  "name": "ecommerce-monitor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/genai": "^2.12.0",
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.19.3",
+    "bullmq": "^5.80.3",
+    "dotenv": "^17.4.2",
+    "ioredis": "^5.11.1",
+    "node-cron": "^4.6.0",
+    "ping": "^1.0.0",
+    "playwright": "^1.61.1",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "quickchart-js": "^4.0.0",
+    "telegraf": "^4.16.3",
+    "telegraf-ratelimit": "^2.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
+  }
+}
