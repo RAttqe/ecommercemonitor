@@ -1,18 +1,20 @@
+require('dotenv').config();
 const cron = require('node-cron');
 const { Queue } = require('bullmq');
 const Redis = require('ioredis');
 const { PrismaClient } = require('@prisma/client');
 const { Telegraf } = require('telegraf');
 
+
 const prisma = new PrismaClient();
-const BOT_TOKEN = '8929164430:AAHA5S6G6R0J06DVbh0mTOSgtegIfPsFFBQ';
-const REDIS_URL = 'rediss://default:gQAAAAAAAhfnAAIgcDIzMmQxNGQxNTc5ODk0OTliYjFjMzQyMDg1YmI2MGU3Zg@creative-parrot-137191.upstash.io:6379';
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const REDIS_URL = process.env.REDIS_URL;
 
 const bot = new Telegraf(BOT_TOKEN);
 const connection = new Redis(REDIS_URL, { maxRetriesPerRequest: null, family: 4, tls: { rejectUnauthorized: false } });
 const monitorQueue = new Queue('monitor-queue', { connection });
 
-// --- 1. РЕГУЛЯРНІ ПЕРЕВІРКИ (кожні 15 хвилин) ---
+// Перевірка
 cron.schedule('* * * * *', async () => {
     const activeSites = await prisma.site.findMany({ where: { isActive: true } });
     for (const site of activeSites) {
