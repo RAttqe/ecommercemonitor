@@ -1,25 +1,20 @@
 const { Queue } = require('bullmq');
 const Redis = require('ioredis');
 
-// ВСТАВТЕ ВАШ REDIS URL СЮДИ:
-const REDIS_URL = 'redis://default:gQAAAAAAAhfnAAIgcDIzMmQxNGQxNTc5ODk0OTliYjFjMzQyMDg1YmI2MGU3Zg@creative-parrot-137191.upstash.io:6379';
-
+const REDIS_URL = process.env.REDIS_URL;
 console.log('⏳ Налаштовуємо підключення...');
-
-// Спеціальні налаштування для стабільної роботи на Windows з хмарним Redis
 const connection = new Redis(REDIS_URL, {
     maxRetriesPerRequest: null,
     family: 4,
     tls: {
         rejectUnauthorized: false
     },
-    // ДОДАЙТЕ ЦІ ДВА ПАРАМЕТРИ:
+  
     connectTimeout: 10000,
     keepAlive: 10000
 });
 
 const monitorQueue = new Queue('monitor-queue', { connection });
-
 async function addJobs() {
     try {
         console.log('📝 Додаємо завдання в чергу...');
