@@ -6,7 +6,6 @@ require('dotenv').config();
 
 const { checkAddToCartAuto } = require('./monitor');
 
-// --- БЕЗПЕЧНІ НАЛАШТУВАННЯ З .ENV ---
 const REDIS_URL = process.env.REDIS_URL;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
