@@ -24,25 +24,22 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-// --- 2. ВЕЧІРНІЙ ЗВІТ (Щодня о 21:00) ---
+// Звіт вечір
 cron.schedule('0 21 * * *', async () => {
     console.log('📊 Генерую вечірні звіти для клієнтів...');
 
-    // Визначаємо початок сьогоднішнього дня
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    // Дістаємо всіх унікальних клієнтів
     const sites = await prisma.site.findMany({
         where: { isActive: true },
-        include: { logs: { where: { createdAt: { gte: startOfDay } } } } // Беремо логи тільки за сьогодні
+        include: { logs: { where: { createdAt: { gte: startOfDay } } } } 
     });
 
-    // Групуємо сайти по клієнтах, щоб надіслати кожному одне повідомлення
     const reportsByClient = {};
 
     sites.forEach(site => {
-        if (site.logs.length === 0) return; // Якщо сьогодні не було перевірок, пропускаємо
+        if (site.logs.length === 0) return; 
 
         const total = site.logs.length;
         const successCount = site.logs.filter(l => l.isSuccess).length;
@@ -61,7 +58,7 @@ cron.schedule('0 21 * * *', async () => {
         reportsByClient[site.clientId] += `└ Сер. швидкість: ${avgSpeed} мс\n\n`;
     });
 
-    // Розсилаємо звіти
+    // Розсилка
     for (const [clientId, text] of Object.entries(reportsByClient)) {
         await bot.telegram.sendMessage(clientId, text, { parse_mode: 'HTML', disable_web_page_preview: true });
     }
