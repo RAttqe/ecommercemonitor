@@ -1,5 +1,6 @@
 const { Queue } = require('bullmq');
 const Redis = require('ioredis');
+require('dotenv').config();
 
 const REDIS_URL = process.env.REDIS_URL;
 console.log('⏳ Налаштовуємо підключення...');
