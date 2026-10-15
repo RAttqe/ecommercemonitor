@@ -4,7 +4,6 @@ const { Queue } = require('bullmq');
 const Redis = require('ioredis');
 require('dotenv').config();
 
-// --- БЕЗПЕЧНІ НАЛАШТУВАННЯ З .ENV ---
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const REDIS_URL = process.env.REDIS_URL;
 const ADMIN_ID = process.env.ADMIN_ID;
@@ -12,13 +11,13 @@ const ADMIN_ID = process.env.ADMIN_ID;
 const prisma = new PrismaClient();
 const connection = new Redis(REDIS_URL, { maxRetriesPerRequest: null, family: 4, tls: { rejectUnauthorized: false } });
 const monitorQueue = new Queue('monitor-queue-v2', { connection });
-// 🟢 ЗАХИСТ ВІД СПАМУ (RATE LIMITING)
+// (RATE LIMITING)
 const rateLimit = require('telegraf-ratelimit');
 bot.use(rateLimit({
-    window: 1000, // Вікно часу: 1 секунда (1000 мс)
-    limit: 1,     // Дозволено запитів: 1
+    window: 1000, 
+    limit: 1,     
     onLimitExceeded: (ctx, next) => {
-        // Якщо клієнт натиснув кнопку 5 разів за секунду — попереджаємо його
+       
         ctx.reply('⚠️ Занадто швидко! Будь ласка, зачекайте секунду перед наступною дією.');
     }
 }));
@@ -282,7 +281,7 @@ bot.on('text', async (ctx) => {
     try {
         const rawUrl = new URL(text.startsWith('http') ? text : `https://${text}`);
 
-        // 🟢 ЗАХИСТ ВІД SSRF (Server-Side Request Forgery)
+      
         const hostname = rawUrl.hostname;
         if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.')) {
             return ctx.reply('❌ Додавання локальних або системних адрес заборонено з міркувань безпеки.');
