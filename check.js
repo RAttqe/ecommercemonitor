@@ -1,13 +1,14 @@
-const API_KEY = "AQ.Ab8RN6KXoqhrmNw81YHj_SrxYtsLhWKP46hpZAc5NUCN3qNg7g"; // Вставте сюди ваш токен
+require('dotenv').config();
+const API_KEY = process.env.GEMINI_API_KEY;
 
 async function checkModels() {
-    console.log("⏳ Стукаємо на сервери Google...");
+    console.log("Сигнал на сервери Google...");
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
         const data = await response.json();
 
         if (data.error) {
-            console.log("❌ Помилка доступу:", data.error.message);
+            console.log("Помилка доступу:", data.error.message);
             return;
         }
 
@@ -15,11 +16,10 @@ async function checkModels() {
             .filter(m => m.supportedGenerationMethods.includes('generateContent'))
             .map(m => m.name.replace('models/', ''));
 
-        console.log("\n🔥 ОСЬ ВАШІ ДОСТУПНІ МОДЕЛІ:");
+        console.log("\n ДОСТУПНІ МОДЕЛІ:");
         console.log(models.join('\n'));
-        console.log("\n👉 Знайдіть у списку найновішу модель зі словом 'flash' і скопіюйте її назву.");
     } catch (error) {
-        console.log("❌ Мережева помилка:", error.message);
+        console.log("Мережева помилка:", error.message);
     }
 }
 
