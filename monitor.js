@@ -6,9 +6,10 @@ const path = require('path');
 const net = require('net');
 const tls = require('tls');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+require('dotenv').config();
 
-// Ініціалізуємо ШІ (Вставте сюди ваш ключ!)
-const genAI = new GoogleGenerativeAI("AQ.Ab8RN6KXoqhrmNw81YHj_SrxYtsLhWKP46hpZAc5NUCN3qNg7g");
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 function getPurePing(targetUrl) {
     return new Promise((resolve) => {
@@ -51,7 +52,7 @@ function getSSLInfo(targetUrl) {
     });
 }
 
-// НОВЕ: Передаємо cachedCta сюди
+
 async function checkAddToCartAuto(targetUrl, cachedCta = null) {
     const browser = await chromium.launch({
         headless: true,
@@ -113,7 +114,6 @@ async function checkAddToCartAuto(targetUrl, cachedCta = null) {
         result.metrics.brokenImages = imagePerformance.filter(img => img.isBroken).length;
         result.metrics.slowImages = imagePerformance.filter(img => !img.isBroken && img.duration > 1000).length;
 
-        // --- МАГІЯ ШІ ПОЧИНАЄТЬСЯ ТУТ ---
         let targetText = cachedCta;
 
         if (!targetText) {
@@ -132,24 +132,22 @@ async function checkAddToCartAuto(targetUrl, cachedCta = null) {
             });
 
             try {
-                // Використовуємо точну назву найстабільнішої моделі: gemini-1.0-pro
                 const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
                 const aiPromptText = `Ти QA інженер. Знайди головну Call-to-Action кнопку (купити, реєстрація, спробувати, кошик, зв'язок) у цьому списку: ${JSON.stringify(candidates)}. Поверни ТІЛЬКИ точний текст цієї кнопки. Жодних пояснень чи лапок.`;
 
                 const aiResponse = await model.generateContent(aiPromptText);
                 targetText = aiResponse.response.text().trim();
-                console.log(`✅ ШІ обрав кнопку: "${targetText}"`);
+                console.log(`ШІ обрав кнопку: "${targetText}"`);
 
                 result.metrics.newAiCta = targetText;
             } catch (e) {
-                console.log(`❌ Помилка ШІ:`, e.message);
+                console.log(`Помилка ШІ:`, e.message);
             }
         } else {
             console.log(`⚡ Використовую кнопку з кешу: "${targetText}"`);
         }
 
-        // --- УНІВЕРСАЛЬНИЙ КЛІК ТА ПЕРЕВІРКА ВОРОНКИ ---
         if (targetText) {
             console.log(`[4] Шукаю кнопку "${targetText}" на сторінці...`);
             // Шукаємо кнопку, що містить текст, і беремо першу видиму
@@ -164,14 +162,11 @@ async function checkAddToCartAuto(targetUrl, cachedCta = null) {
                 await page.waitForTimeout(4000);
 
                 const urlAfterClick = page.url();
-                // Рахуємо форми на сторінці (для сайтів-візиток і SaaS)
                 const formsAppeared = await page.locator('input[type="text"], input[type="email"], form, [role="dialog"]').count();
 
-                // Якщо URL змінився, АБО з'явилася форма/попап, АБО кошик
                 if (urlAfterClick !== urlBeforeClick || formsAppeared > 0 || urlAfterClick.includes('cart') || urlAfterClick.includes('checkout')) {
                     result.metrics.conversionWorked = true;
                 } else {
-                    // Якщо нічого не змінилося — перевіряємо, чи немає критичної системної помилки (як ми робили для Velomaximum)
                     const errorText = page.getByText(/(помилка відправки|сталася помилка|не вдалося|сервер не відповідає)/i);
                     for (let i = 0; i < await errorText.count(); i++) {
                         if (await errorText.nth(i).isVisible()) {
@@ -189,29 +184,22 @@ async function checkAddToCartAuto(targetUrl, cachedCta = null) {
         result.success = true;
 
     } catch (error) {
-        console.error('❌ Помилка:', error.message);
+        console.error('Помилка:', error.message);
         const screenshotsDir = path.join(__dirname, 'screenshots');
         if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
         const fileName = `error-${Date.now()}.png`;
         result.screenshotPath = path.join('screenshots', fileName);
 
         await page.waitForTimeout(2000);
-        // 1. Робимо скріншот
         await page.screenshot({ path: result.screenshotPath, fullPage: true });
-
-        // 2. Базова помилка
         result.error = error.message;
 
-        // 3. РОЗУМНИЙ ФІЛЬТР: Не викликаємо ШІ, якщо сайт взагалі не існує (білий екран)
         if (error.message.includes('фізично недоступний')) {
-            console.log('⚪ Екран білий (Сайт не існує). ШІ не викликаємо.');
+            console.log('Екран білий (Сайт не існує). ШІ не викликаємо.');
         } else {
-            // --- МАГІЯ ШІ: АНАЛІЗ СКРІНШОТУ ПОМИЛКИ ---
             try {
-                console.log(`🤖 Прошу ШІ проаналізувати скріншот помилки...`);
+                console.log(`Прошу ШІ проаналізувати скріншот помилки...`);
 
-                // ВАЖЛИВО: Впишіть сюди ту саму модель, яка успішно запрацювала для пошуку кнопок!
-// МАЄ БУТИ ТАК:
                 const visionModel = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
                 const imageData = fs.readFileSync(result.screenshotPath);
                 const imageBase64 = imageData.toString("base64");
@@ -224,12 +212,12 @@ async function checkAddToCartAuto(targetUrl, cachedCta = null) {
                 ]);
 
                 const aiAnalysis = response.response.text().trim();
-                console.log(`👁️ Висновок ШІ: ${aiAnalysis}`);
+                console.log(`Висновок ШІ: ${aiAnalysis}`);
 
                 result.error = `${error.message}\n\n👁️ <b>Висновок ШІ:</b> ${aiAnalysis}`;
 
             } catch (aiError) {
-                console.log(`❌ Не вдалося проаналізувати скріншот:`, aiError.message);
+                console.log(`Не вдалося проаналізувати скріншот:`, aiError.message);
             }
         }
 
