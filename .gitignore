@@ -1,5 +1,4 @@
 # Безпека (Секретні ключі та паролі)
-.env
 
 # Залежності Node.js (Вони занадто важкі, сервер сам їх завантажить)
 node_modules/
@@ -26,3 +25,4 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+config.bat
